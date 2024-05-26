@@ -105,20 +105,23 @@ public class lextotal {
         System.out.println("len = " + len);
     }
 
-
+    /**
+     * 3.词法分析-核心区
+     * 调用链 read_next -> judge -> peek,only调用
+     */
     private static int read_next() {
-        //code读取文件得到的测试代码
-        //第一次测试
+        //code:读取文件得到的测试代码
+        //1.第一次测试
         int type = judge(code.charAt(pos));
-        //循环测试直到结束，连续字符读取
+        //2.循环测试直到结束，连续字符读取
         while(pos < len && type == Type._SPACE_.getValue()) {
             ++pos;
             type = judge(code.charAt(pos));
-        }
+        }//result识别到一个有效的token,包括_ERROR
+        //3.
         if(pos >= len) return _EOF_;
         ++pos;
-//    cout << "pos: " <<  pos << endl;
-//    lineCount++;
+//        System.out.println("pos = " + pos);
         if(type == _ERROR_) return _ERROR_;
         if(type == Type._INT_.getValue()) {
             // cout << "int: " << tempToken << endl;
@@ -143,30 +146,43 @@ public class lextotal {
     }
 
     private static int judge(char ch) {
+        //ch 当前字符 nextChar 下一个字符
+        //pos tempToken
         if(ch == '\n' || ch == ' ') return Type._SPACE_.getValue();
+        //1.数字常量
         if(LexUtils.isDigit(ch)) {
             char nextChar = peek();
+            //小数分支
             if(ch == '0' && nextChar == '.') { // 0.多少
+                //先移动pos,让pos指向'.'
                 ++pos;
                 if(!LexUtils.isDigit(peek()))   // .后面不是数字
                     return _ERROR_;
                 tempToken = "0.";
-                while(LexUtils.isDigit(peek())) {
+                //当型循环，结束时pos指向最后一个数字
+                while(LexUtils.isDigit(peek())) { //先判断后执行
                     tempToken += peek();
                     ++pos;
                 }
-                return Type._DOUBLE_.getValue();    // 8
-            } else if(ch == '0' && !LexUtils.isDigit(nextChar)) { // 不是数字也不是.，说明是单纯的一个0
+                return Type._DOUBLE_.getValue();    // 终止状态8
+            }
+            //update-逻辑需完善
+            else if(ch == '0' && !LexUtils.isDigit(nextChar)) { // 不是数字也不是.，说明是单纯的一个0
                 tempToken = "0";
-                return Type._INT_.getValue();   // 5
-            } else if(ch != '0') {  // digit1
+                return Type._INT_.getValue();   // 终止状态5
+            }
+            //最后判断整数
+            else if(ch != '0') {
+                // digit1
+                //1.小数点前面的数字
                 //ch -> string
                 tempToken = ch+"";
+                //同上
                 while(LexUtils.isDigit(peek())) {
                     tempToken += peek();
                     ++pos;
                 }
-                //??
+                //2.小数点后面的数字
                 nextChar = peek();
                 if(nextChar == '.') {
                     tempToken += nextChar;
@@ -179,17 +195,22 @@ public class lextotal {
                             tempToken += peek();
                             ++pos;
                         }
-                        return Type._DOUBLE_.getValue();    // 8
-                    } else return _ERROR_;
-                } else return Type._INT_.getValue();    // 6
-            } else {    // 0+数字
+                        return Type._DOUBLE_.getValue();    // 终止状态8
+                    }
+                    else return _ERROR_;
+                }
+                else return Type._INT_.getValue();    // 终止状态6
+            }
+            else {    // 0+数字的情况进入本分支
                 ++pos;
                 return _ERROR_;         // ERROR
             }
         }
+        //2.标识符或关键字,isLetter have '_'
         if(LexUtils.isLetter(ch)) {
             tempToken = ch + "";
             char nextChar = peek();
+            //上面是另一种形式
             while( LexUtils.isLetter(nextChar) || LexUtils.isDigit(nextChar) ) { // 标识符~
                 tempToken += nextChar;
                 ++pos;
@@ -197,6 +218,7 @@ public class lextotal {
             }
             return LexUtils.isKeyword(tempToken) ? Type._KEYWORD_.getValue() : Type._ID_.getValue();
         }
+        //3.字符串常量
         if(ch == '\"') {
             tokenList.add(new Token(54, "\"", cat[Type._DELIMITER_.getValue()]));
             tempToken = "";
@@ -206,13 +228,15 @@ public class lextotal {
                 ++pos;
                 nextChar = peek();
             }
-            tokenList.add(new Token(69, tempToken, cat[Type._STRING_.getValue()]));
+            tokenList.add(new Token(69, tempToken, cat[Type._STRING_.getValue()]));//包含了tempToken为空的情况
             tokenList.add(new Token(54, "\"", cat[Type._DELIMITER_.getValue()]));
-            pos += 2;
+            pos += 2;//因为下一个是'\"'已处理
             return Type._STRING_.getValue();
         }
+        //4.字符常量
         if(ch == '\'') {
             tempToken = "";
+            //因为字符常量只有一个字符，所以没有while循环
             ++pos;
             char nextChar = peek();
             if(nextChar == '\'') {
@@ -223,13 +247,14 @@ public class lextotal {
                 tokenList.add(new Token(53, "\'", cat[Type._DELIMITER_.getValue()]));
                 ++pos;
                 return Type._CHAR_.getValue();
-            } else if(code.charAt(pos) == '\'') {
+            }
+            else if(code.charAt(pos) == '\'') {//空字符常量
                 tokenList.add(new Token(53, "\'", cat[Type._DELIMITER_.getValue()]));
                 tokenList.add(new Token(68, tempToken, cat[Type._CHAR_.getValue()]));  // 空字符串
                 tokenList.add(new  Token(53, "\'", cat[Type._DELIMITER_.getValue()]));
                 return Type._CHAR_.getValue();
-            } else {
-                while(pos < len && nextChar != '\'') {
+            } else {//code.charAt(pos) is not '\''
+                while(pos < len && nextChar != '\'') { //一错到底
                     ++pos;
                     nextChar = peek();
                 }
@@ -237,22 +262,24 @@ public class lextotal {
                 return _ERROR_;
             }
         }
+        //5.多行注释和单行注释
         if(ch == '/') {
+            //多行注释进入,忽略/*界符
             if(peek() == '*') {
                 ++pos;
-                char nextChar = peek();
-                ++pos;
+                char nextChar = peek();//第一个*
+                ++pos;//指向第一个*
                 tempToken = "";
                 while(pos < len) {
-                    if(nextChar == '*' && peek() == '/') {
+                    if(nextChar == '*' && peek() == '/') { //*/结束否则，其他都当作注释
                         tokenList.add(new Token(55, "/*", cat[Type._DELIMITER_.getValue()]));
                         tokenList.add(new Token(71, tempToken, cat[Type._COMMENT_.getValue()]));
                         tokenList.add(new Token(56, "*/", cat[Type._DELIMITER_.getValue()]));
                         ++pos;
-                        ++pos;
+                        ++pos;//将移动到*/结束的开头第一个字符
                         return Type._COMMENT_.getValue();
                     } else {
-                        tempToken += nextChar;
+                        tempToken += nextChar; //第一个*？？？
                         nextChar = peek();
                         ++pos;
                     }
@@ -260,7 +287,7 @@ public class lextotal {
                 return _ERROR_;
             }
         }
-
+        //6.运算符
         if(LexUtils.isOP(ch)) {   // op运算符
             tempToken = "";
             tempToken += ch;
@@ -273,6 +300,7 @@ public class lextotal {
                 } else return Type._OPERATOR_.getValue();   // 14
             } else return Type._OPERATOR_.getValue();       // 14
         }
+        //7.界符，界符只有一个字符
         if(LexUtils.isDelimiter(ch)) {
             tempToken = "";
             tempToken += ch;
@@ -281,8 +309,15 @@ public class lextotal {
         return _ERROR_;
     }
 
+
+    /**
+     * 预读取code变量的方法(只读)
+     * @var pos len
+     * @return '\0'
+     */
     private static char peek() {
-        return 0;
+        if(pos+1 < len) return code.charAt(pos+1);
+        else return '\0';
     }
 
 }

@@ -31,6 +31,15 @@ public class LexUtils {
         return false;
     }
 
+    public static boolean isOP(char c){
+//        boolean flag = false;
+        for(char temp: op.toCharArray()){
+            if (temp == c)
+                return true;
+        }
+        return false;
+    }
+
     public static boolean isOperator(String s){
         for(int i = 0; i < 28; ++i)
             if (s == operate[i])
@@ -42,15 +51,6 @@ public class LexUtils {
         for(int i = 0; i < 15; ++i)
             if (c == delimiter[i])
                 return true;
-        return false;
-    }
-
-    public static boolean isOP(char c){
-//        boolean flag = false;
-        for(char temp: op.toCharArray()){
-            if (temp == c)
-                return true;
-        }
         return false;
     }
 }
