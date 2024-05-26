@@ -14,38 +14,46 @@ import java.util.Vector;
  * @create 2024-05-25 10:54
  */
 public class lextotal {
-    //main
-    private static int pos = Vars.pos;
+    //var main
+    private static int pos = Vars.pos;//相当于文件指针
+    //occurs in all methods except for readFile() and peek()
     private static int len = Vars.len;
-    private static Vector<Token> tokenList = Vars.tokenList;
-    //init
+    private static Vector<Token> tokenList = Vars.tokenList; //结果列表
+    /* var init()中init */
+    // the follwing three vars is only changed by methods of LexUtils Class
     private static String[]  keywords = Vars.keywords;
     private static String[]  operate = Vars.operate;
     private static char[]  delimiter = Vars.delimiter;
+    // init() and read_next()
     private static Map<String, Integer> categoryCode = Vars.categoryCode;  // 种别码表
-    //read_next
-    private static String code = Vars.code;
-    private static String tempToken = Vars.tempToken;
+    //var read_next()
+    private static String code = Vars.code;//读入的代码文件存放变量
+    private static String tempToken = Vars.tempToken;//单行代码
     public static String cat[] = Vars.cat;
-    //
+
     //const
-    //const - main
-    private static final int _EOF_ = Finals._EOF_;
-    private static final int _ERROR_ = Finals._ERROR_;
-    //const - init
+    //const - main()
+    private static final int _EOF_ = Finals._EOF_; // in main() and read_next()
+    private static final int _ERROR_ = Finals._ERROR_; //in main() and read_next() and judge()
+    //const - init()
     private static final String CategoryFileName = Finals.CategoryFileName;
     private static final String CodeFileName = Finals.CodeFileName;
 
     public static void main(String[] args) {
         init();
-        while (pos < len){
-            int flag = read_next();
-            if(flag == _EOF_){
-                break;
+        try {
+            while (pos < len){
+                int flag = read_next();
+                if(flag == _EOF_){
+                    break;
+                }
+                else if(flag == _ERROR_){
+                    tokenList.add(new Token(_ERROR_, "ERROR!", "ERROR"));
+                }
             }
-            else if(flag == _ERROR_){
-                tokenList.add(new Token(_ERROR_, "ERROR!", "ERROR"));
-            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
         //输出结果,tokenList-token结果列表
         for(Token token:tokenList){
@@ -83,7 +91,7 @@ public class lextotal {
             categoryCode.put(res.get(i+22), i+1+22);
         }
         for (int i = 0; i < 15; i++) {
-            //字符串和字符转换
+            //更改:字符串和字符转换
             delimiter[i] = res.get(i+50).charAt(0);
             categoryCode.put(res.get(i+50), i+1+50);
         }

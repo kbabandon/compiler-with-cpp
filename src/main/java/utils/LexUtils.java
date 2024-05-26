@@ -8,9 +8,11 @@ import vars.Vars;
  * @create 2024-05-25 10:58
  */
 public class LexUtils {
+    //var
     private static String[] keywords = Vars.keywords;
     private static String[] operate = Vars.operate;
     private static char[] delimiter = Vars.delimiter;
+    //const isOP()
     private static String op = Finals.op;
 
     // 0-9

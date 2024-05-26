@@ -6,14 +6,14 @@ package vars;
  */
 public class Finals {
     /**
-     * LexUtils中使用的常量
+     * LexUtils类中使用的常量
      */
     public static final String op = "+-*/%=!&|<>";
     /**
-     * 全局常量
+     * lextotal类中使用的常量
      */
-    public static final String CategoryFileName = "./compiler/categoryCode.txt";
-    public static final String CodeFileName = "./compiler/code.txt";
+    public static final String CategoryFileName = "./txt/categoryCode.txt";
+    public static final String CodeFileName = "./txt/code.txt";
     public static final int _EOF_ = -2;
     public static final int _ERROR_ = -1;
 
