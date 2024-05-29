@@ -1,5 +1,6 @@
 package vars;
 
+import entity.Production;
 import entity.Token;
 
 import java.util.HashMap;
@@ -26,5 +27,20 @@ public class Vars {
     public static String code = "";
     public static String tempToken = "";  // 当前识别的字符串
     public static Vector<Token> tokenList = new Vector<>();  // 存储识别出的token
+
+
+    /**
+     * 语法分析
+     */
+    public static char[] analyeStack = new char[20]; /*分析栈*/
+    public static char[] restStack = new char[20]; /*剩余栈*/
+    //变量区
+    //简单变量
+    public static int top=0;
+    public static int ridx=0;
+    public static int len2=0; //len为输入串长度
+    //复合变量
+    public static Production e, t, g, g1, s, s1, f, f1; /* 产生式结构体变量 */
+    public static Production[][]  C = new Production[10][10];
 
 }

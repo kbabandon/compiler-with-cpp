@@ -17,4 +17,10 @@ public class Finals {
     public static final int _EOF_ = -2;
     public static final int _ERROR_ = -1;
 
+    /**
+     * 语法分析
+     */
+    public static final String ExpFileName = "./txt/exp1.txt";
+    public static final String v1 =  "i+*()#"; /*终结符*/
+    public static final String v2 = "EGTSF";
 }
